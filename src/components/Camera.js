@@ -1,21 +1,23 @@
 import React, { useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import Compliment from './compliments';
+import CollageBuilder from './CollageBuilder.js'; // 🧩 Add this
 
 const Camera = () => {
   const webcamRef = useRef(null);
   const [image, setImage] = useState(null);
   const [countdown, setCountdown] = useState(null);
-  const [timer, setTimer] = useState(3); // default 3 seconds
+  const [timer, setTimer] = useState(3);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [showCollage, setShowCollage] = useState(false);
 
   const [gallery, setGallery] = useState(() => {
     const saved = localStorage.getItem('clicktales-gallery');
-    return saved ? JSON.parse(saved).slice(0, 3) : [];
+    return saved ? JSON.parse(saved).slice(0, 4) : [];
   });
 
   const capture = () => {
     setCountdown(timer);
-
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev === 1) {
@@ -23,7 +25,7 @@ const Camera = () => {
           const screenshot = webcamRef.current.getScreenshot();
           if (screenshot) {
             setImage(screenshot);
-            const updatedGallery = [screenshot, ...gallery].slice(0, 3);
+            const updatedGallery = [screenshot, ...gallery].slice(0, 4);
             setGallery(updatedGallery);
             localStorage.setItem('clicktales-gallery', JSON.stringify(updatedGallery));
           }
@@ -34,8 +36,18 @@ const Camera = () => {
     }, 1000);
   };
 
-  const retake = () => {
-    setImage(null);
+  const retake = () => setImage(null);
+
+  const toggleSelect = (img) => {
+    if (selectedImages.includes(img)) {
+      setSelectedImages(selectedImages.filter(i => i !== img));
+    } else {
+      if (selectedImages.length < 4) {
+        setSelectedImages([...selectedImages, img]);
+      } else {
+        alert("You can only select up to 4 images for collage.");
+      }
+    }
   };
 
   return (
@@ -44,7 +56,6 @@ const Camera = () => {
 
       {!image ? (
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          {/* Webcam */}
           <Webcam
             audio={false}
             ref={webcamRef}
@@ -57,7 +68,6 @@ const Camera = () => {
             }}
           />
 
-          {/* Countdown Display */}
           {countdown && (
             <div
               style={{
@@ -75,7 +85,6 @@ const Camera = () => {
             </div>
           )}
 
-          {/* Capture Button */}
           <button
             onClick={capture}
             disabled={countdown !== null}
@@ -100,14 +109,12 @@ const Camera = () => {
             <span style={{ fontSize: '24px', color: 'white' }}>📷</span>
           </button>
 
-          {/* Timer Selector */}
           <div
             style={{
               position: 'absolute',
               top: '10px',
               left: '10px',
               display: 'flex',
-              flexDirection: 'row',
               gap: '6px',
             }}
           >
@@ -143,58 +150,60 @@ const Camera = () => {
       {/* Gallery */}
       {gallery.length > 0 && (
         <div style={{ marginTop: '30px' }}>
-          <h3>Latest 3 Photos</h3>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '24px',
-              justifyContent: 'center',
-              marginTop: '20px',
-            }}
-          >
+          <h3>Latest 4 Photos</h3>
+          <p style={{ fontSize: '14px', color: '#777' }}>Tap to select photos for collage</p>
+          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
             {gallery.map((img, index) => (
               <div
                 key={index}
+                onClick={() => toggleSelect(img)}
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  backgroundColor: '#f9f9f9',
+                  border: selectedImages.includes(img) ? '4px solid #ff7f50' : '2px solid transparent',
                   borderRadius: '12px',
-                  padding: '10px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  padding: '6px',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 8px rgba(0,0,0,0.1)',
                 }}
               >
                 <img
                   src={img}
                   alt={`snap-${index}`}
-                  width={250}
+                  width={200}
                   height="auto"
-                  style={{
-                    borderRadius: '10px',
-                    boxShadow: '0 0 12px rgba(0,0,0,0.25)',
-                    marginBottom: '10px',
-                  }}
+                  style={{ borderRadius: '10px' }}
                 />
-                <a
-                  href={img}
-                  download={`ClickTales_Photo_${index + 1}.jpg`}
-                  style={{
-                    fontSize: '14px',
-                    backgroundColor: '#e9b0a4ff',
-                    color: 'white',
-                    padding: '6px 12px',
-                    textDecoration: 'none',
-                    borderRadius: '6px',
-                  }}
-                >
-                  📥 Download
-                </a>
               </div>
             ))}
           </div>
+
+          {selectedImages.length >= 2 && (
+            <button
+              onClick={() => setShowCollage(true)}
+              style={{
+                marginTop: '20px',
+                backgroundColor: '#ff7f50',
+                color: '#fff',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              🧩 Create Collage ({selectedImages.length})
+            </button>
+          )}
         </div>
+      )}
+
+      {/* Collage Modal */}
+      {showCollage && (
+        <CollageBuilder
+          images={selectedImages}
+          onClose={() => {
+            setShowCollage(false);
+            setSelectedImages([]);
+          }}
+        />
       )}
     </div>
   );
