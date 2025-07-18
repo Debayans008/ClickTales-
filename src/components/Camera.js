@@ -16,25 +16,39 @@ const Camera = () => {
     return saved ? JSON.parse(saved).slice(0, 4) : [];
   });
 
-  const capture = () => {
-    setCountdown(timer);
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === 1) {
-          clearInterval(interval);
-          const screenshot = webcamRef.current.getScreenshot();
-          if (screenshot) {
-            setImage(screenshot);
-            const updatedGallery = [screenshot, ...gallery].slice(0, 4);
-            setGallery(updatedGallery);
-            localStorage.setItem('clicktales-gallery', JSON.stringify(updatedGallery));
-          }
-          return null;
+ const capture = () => {
+  if (timer === 0) {
+    // Instantly capture without countdown
+    const screenshot = webcamRef.current.getScreenshot();
+    if (screenshot) {
+      setImage(screenshot);
+      const updatedGallery = [screenshot, ...gallery].slice(0, 4); // ✅ latest 4
+      setGallery(updatedGallery);
+      localStorage.setItem('clicktales-gallery', JSON.stringify(updatedGallery));
+    }
+    return;
+  }
+
+  setCountdown(timer);
+
+  const interval = setInterval(() => {
+    setCountdown((prev) => {
+      if (prev === 1) {
+        clearInterval(interval);
+        const screenshot = webcamRef.current.getScreenshot();
+        if (screenshot) {
+          setImage(screenshot);
+          const updatedGallery = [screenshot, ...gallery].slice(0, 4); // ✅ latest 4
+          setGallery(updatedGallery);
+          localStorage.setItem('clicktales-gallery', JSON.stringify(updatedGallery));
         }
-        return prev - 1;
-      });
-    }, 1000);
-  };
+        return null;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+};
+
 
   const retake = () => setImage(null);
 
@@ -118,7 +132,7 @@ const Camera = () => {
               gap: '6px',
             }}
           >
-            {[2, 3, 5, 10].map((val) => (
+            {[0,2, 3, 5, 10].map((val) => (
               <button
                 key={val}
                 onClick={() => setTimer(val)}
