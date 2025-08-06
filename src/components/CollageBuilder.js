@@ -25,7 +25,7 @@ const CollageBuilder = ({ images, onClose }) => {
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000,
-      overflow: 'auto', // 💡 Add scrolling to the whole modal if needed
+      overflow: 'auto',
     }}>
       <div style={{
         background: '#1e1e1e',
@@ -34,13 +34,11 @@ const CollageBuilder = ({ images, onClose }) => {
         textAlign: 'center',
         maxWidth: '360px',
         width: '90%',
-        maxHeight: '90vh', // 💡 Set a maximum height
-        overflowY: 'auto',  // 💡 Make content scrollable if taller than screen
+        maxHeight: '90vh',
+        overflowY: 'auto',
         boxShadow: '0 0 20px rgba(0,0,0,0.5)',
       }}>
         <h3 style={{ color: '#fff', marginBottom: '20px' }}>🎞️ Your Filmstrip Collage</h3>
-
-        {/* Film Strip Style */}
         <div
           ref={collageRef}
           style={{
@@ -75,8 +73,6 @@ const CollageBuilder = ({ images, onClose }) => {
             </div>
           ))}
         </div>
-
-        {/* Buttons */}
         <div style={{ marginTop: '20px' }}>
           <button onClick={downloadCollage} style={{
             backgroundColor: '#4caf50',
@@ -89,7 +85,6 @@ const CollageBuilder = ({ images, onClose }) => {
           }}>
             📥 Download Collage
           </button>
-
           <button onClick={onClose} style={{
             backgroundColor: '#888',
             color: 'white',

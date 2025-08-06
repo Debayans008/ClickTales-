@@ -1,15 +1,16 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-require('dotenv').config();
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import Photo from './models/photo.js';
+
+dotenv.config();
 
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/clicktales', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
-const Photo = require('./models/photo');
 
 const app = express();
 app.use(cors());

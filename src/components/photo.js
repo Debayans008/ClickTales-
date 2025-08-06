@@ -6,6 +6,4 @@ const photoSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const Photo = mongoose.model('Photo', photoSchema);
-
-export default Photo;
+export default mongoose.model('Photo', photoSchema);

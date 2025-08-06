@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Camera, Sun, Moon } from "lucide-react";
 import Webcam from "react-webcam";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "./firebase";
 
 // --- UI Components ---
 const Button = ({ children, className = "", ...props }) => (
@@ -264,6 +266,14 @@ function HomePage() {
       .catch(err => console.error(err));
   }
 
+  // Example usage in a component
+  async function uploadImageToFirebase(imageFile) {
+    const storageRef = ref(storage, `images/${imageFile.name}`);
+    await uploadBytes(storageRef, imageFile);
+    const url = await getDownloadURL(storageRef);
+    return url;
+  }
+
   return (
     <>
       {!started ? (
@@ -272,7 +282,7 @@ function HomePage() {
         <>
           <CameraPreview filter={filter} onCapture={handleCapture} />
           <FiltersCarousel selected={filter} onSelect={setFilter} />
-          <GallerySlideshow images={capturedImages.map(photo => photo.image)} />
+          <GallerySlideshow images={capturedImages} />
         </>
       )}
     </>
@@ -295,5 +305,5 @@ function App() {
 
 export default App;
 
-<link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
 
