@@ -9,11 +9,21 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/clicktales'
   useUnifiedTopology: true,
 });
 
-const Photo = require('./models/Photo');
+const Photo = require('./models/photo');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
+
+// Get all photos
+app.get('/api/photos', async (req, res) => {
+  try {
+    const photos = await Photo.find().sort({ createdAt: -1 });
+    res.json(photos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Upload photo
 app.post('/api/photos', async (req, res) => {
@@ -23,16 +33,6 @@ app.post('/api/photos', async (req, res) => {
     const photo = new Photo({ image, filter });
     await photo.save();
     res.json(photo);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Get all photos
-app.get('/api/photos', async (req, res) => {
-  try {
-    const photos = await Photo.find().sort({ createdAt: -1 });
-    res.json(photos);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -61,3 +61,33 @@ app.delete('/api/photos/:id', async (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+
+// Example for HomePage or App.js
+import { useEffect, useState } from "react";
+
+function HomePage() {
+  const [started, setStarted] = useState(false);
+  const [capturedImages, setCapturedImages] = useState([]);
+  const [filter, setFilter] = useState("");
+
+  // Fetch photos from backend on mount
+  useEffect(() => {
+    fetch("http://localhost:4000/api/photos")
+      .then(res => res.json())
+      .then(data => setCapturedImages(data))
+      .catch(err => console.error(err));
+  }, []);
+
+  function handleCapture(img) {
+    fetch("http://localhost:4000/api/photos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: img, filter }),
+    })
+      .then(res => res.json())
+      .then(newPhoto => setCapturedImages(prev => [newPhoto, ...prev]))
+      .catch(err => console.error(err));
+  }
+
+  // ...rest of your HomePage code
+}
